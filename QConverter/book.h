@@ -2,6 +2,7 @@
 #define BOOK_H
 #include <QObject>
 #include <QDir>
+#include <QImage>
 
 class Book : public QObject
 {
@@ -11,16 +12,19 @@ public:
     void convert();
     void setSource(QString xDir);
 
+
 signals:
     void percentCompleted(int );
 
 private:
     QDir source;
+    QDir temp;
     QFileInfoList chapterList;
     QFileInfoList pageList;
     quint64 pageNumber;
+    QImage pngPage;
 
-    void convertChapter(QDir xChapter, quint64 &xPage);
+    void convertChapter(QDir xChapter);
 
 };
 
