@@ -23,7 +23,7 @@ private slots:
 
 private:
     Ui::MainWindow *ui;
-    Book currentBook;
+    Book *currentBook;
 };
 
 #endif // MAINWINDOW_H

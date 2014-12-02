@@ -4,13 +4,29 @@
 #include <QDebug>
 #include <QMessageBox>
 #include <QFile>
+#include <QProcess>
 
 #define TEMPDIR "/temp3373"
 
+Book::Book(QObject *parent):QObject(parent)
+{
+    source = new QDir();
+    temp = new QDir();
+    pngPage = new QImage();
+    ext7zip = new QProcess(this);
+}
+
+Book::~Book()
+{
+    delete source;
+    delete temp;
+    delete pngPage;
+    delete ext7zip;
+}
 
 void Book::setSource(QString xDir)
 {
-    source.setPath(xDir);
+    source->setPath(xDir);
 }
 
 void Book::convert()
@@ -19,56 +35,50 @@ void Book::convert()
     pageNumber = 0;
     int i = 0;
     chapterList.clear();
-    chapterList << source.entryInfoList(QDir::AllDirs | QDir::NoDotAndDotDot | QDir::NoSymLinks, QDir::Name | QDir::DirsFirst);
-    temp.setPath(TEMPDIR);
+    chapterList << source->entryInfoList(QDir::AllDirs | QDir::NoDotAndDotDot | QDir::NoSymLinks, QDir::Name | QDir::DirsFirst);
+    temp->setPath(TEMPDIR);
+    arguments.clear();
 
     //create temp folder
-    if (temp.exists())
-    {
-        if(QMessageBox::question(NULL, TEMPDIR, "Temp directory exists, overwrite data?") == QMessageBox::Yes)
-        {
-            if(temp.removeRecursively())
-                temp.mkpath(TEMPDIR);
-            else {
-                qDebug()<<TEMPDIR<<" can't delete!";
-                return;
-            }
-        }
-        else return;
-    }
-    else
-        temp.mkpath(TEMPDIR);
+    if(!temp->removeRecursively())
+       qDebug()<<TEMPDIR<<" can't delete!";
+    temp->mkpath(TEMPDIR);
 
     //Moving images
-    for (QFileInfoList::const_iterator ite = chapterList.constBegin(); ite != chapterList.constEnd(); ++ite)
+    for (QFileInfoList::iterator ite = chapterList.begin(); ite != chapterList.end(); ++ite)
     {
         i++;
-        this->convertChapter(QDir(ite->absoluteFilePath()));
+        this->convertChapter(*ite);
         emit percentCompleted((i*100)/(chapterList.size()));
     }
 
-    //Compressing...
+    //Compressing...      
+    arguments << "a" << source->absolutePath().append(".zip") << temp->absolutePath().append("/*");
+    ext7zip->start("D:/7za", arguments);
 
-    //Rename
+    if(ext7zip->waitForFinished(-1))
+    {
+        //Rename
+        QFile::rename(source->absolutePath().append(".zip"), source->absolutePath().append(".cbz"));
 
-    //delete temp
-    /*if(!temp.removeRecursively())
-       qDebug()<<TEMPDIR<<" can't delete!";*/
-
+        //delete
+        if(!temp->removeRecursively())
+            qDebug()<<TEMPDIR<<" can't delete!";
+    }
 
 }
 
-void Book::convertChapter(QDir xChapter)
+void Book::convertChapter(QFileInfo &xChapter)
 {
     //init page list
     pageList.clear();
-    pageList << xChapter.entryInfoList(QDir::Files | QDir::NoDotAndDotDot | QDir::NoSymLinks, QDir::Name);
+    pageList << QDir(xChapter.absoluteFilePath()).entryInfoList(QDir::Files | QDir::NoDotAndDotDot | QDir::NoSymLinks, QDir::Name);
     QString newName;
 
     //Moving...
     for (QFileInfoList::const_iterator ite = pageList.constBegin(); ite != pageList.constEnd(); ++ite)
     {
-        newName = temp.absolutePath().append("/%1.jpg").arg(pageNumber,6,10,QLatin1Char('0'));
+        newName = temp->absolutePath().append("/%1.jpg").arg(pageNumber,6,10,QLatin1Char('0'));
 
         if (ite->suffix().contains("jpg",Qt::CaseInsensitive))
         {
@@ -79,10 +89,10 @@ void Book::convertChapter(QDir xChapter)
         {
             if (ite->suffix().contains("png",Qt::CaseInsensitive))
             {
-                if(!pngPage.load(ite->absoluteFilePath(),"png"))
+                if(!pngPage->load(ite->absoluteFilePath(),"png"))
                      qDebug()<<"Load "<<ite->absoluteFilePath()<<" to "<<newName<<" fail";
 
-                if (!pngPage.save(newName,"jpg"))
+                if (!pngPage->save(newName,"jpg"))
                      qDebug()<<"Save "<<ite->absoluteFilePath()<<" to "<<newName<<" fail";
 
             }

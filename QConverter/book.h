@@ -3,6 +3,7 @@
 #include <QObject>
 #include <QDir>
 #include <QImage>
+#include <QProcess>
 
 class Book : public QObject
 {
@@ -11,20 +12,25 @@ class Book : public QObject
 public:
     void convert();
     void setSource(QString xDir);
-
+    Book(QObject *parent = 0);
+    ~Book();
 
 signals:
     void percentCompleted(int );
 
 private:
-    QDir source;
-    QDir temp;
+    QDir *source;
+    QDir *temp;
+    QFileInfo *convertedBook;
+
     QFileInfoList chapterList;
     QFileInfoList pageList;
     quint64 pageNumber;
-    QImage pngPage;
+    QImage *pngPage;
+    QProcess *ext7zip;
+    QStringList arguments;
 
-    void convertChapter(QDir xChapter);
+    void convertChapter(QFileInfo &xChapter);
 
 };
 

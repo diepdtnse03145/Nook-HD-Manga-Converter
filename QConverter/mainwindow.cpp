@@ -10,7 +10,8 @@
 
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
-    ui(new Ui::MainWindow)
+    ui(new Ui::MainWindow),
+    currentBook(new Book(this))
 {
     ui->setupUi(this);
     ui->listWidget->setSelectionMode(QAbstractItemView::ExtendedSelection);
@@ -19,7 +20,7 @@ MainWindow::MainWindow(QWidget *parent) :
     connect(ui->addButton,SIGNAL(clicked()),this,SLOT(addBook()));
     connect(ui->clearAllButton,SIGNAL(clicked()),ui->listWidget,SLOT(clear()));
     connect(ui->removeButton,SIGNAL(clicked()),this,SLOT(remove()));
-    connect(&currentBook,SIGNAL(percentCompleted(int)),ui->progressBar,SLOT(setValue(int)));
+    connect(currentBook,SIGNAL(percentCompleted(int)),ui->progressBar,SLOT(setValue(int)));
 }
 
 MainWindow::~MainWindow()
@@ -53,8 +54,8 @@ void MainWindow::convert()
     //convert all book
     for(int i = 0; i < ui->listWidget->count(); ++i)
     {
-        currentBook.setSource(ui->listWidget->item(i)->text());
-        currentBook.convert();
+        currentBook->setSource(ui->listWidget->item(i)->text());
+        currentBook->convert();
     }
     qDebug()<<QTime::currentTime();
 }
