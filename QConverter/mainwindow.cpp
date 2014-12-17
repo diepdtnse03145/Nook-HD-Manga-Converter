@@ -7,6 +7,7 @@
 #include <QUrl>
 #include <QDebug>
 #include <QTime>
+#include <QMessageBox>
 
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
@@ -26,6 +27,7 @@ MainWindow::MainWindow(QWidget *parent) :
 MainWindow::~MainWindow()
 {
     delete ui;
+    delete currentBook;
 }
 
 void MainWindow::addBook()
@@ -56,8 +58,13 @@ void MainWindow::convert()
     {
         currentBook->setSource(ui->listWidget->item(i)->text());
         currentBook->convert();
+
     }
     qDebug()<<QTime::currentTime();
+    QMessageBox::information(
+                this,
+                tr("Nook HD+ Manga Converter"),
+                tr("All job completed!") );
 }
 
 void MainWindow::remove()

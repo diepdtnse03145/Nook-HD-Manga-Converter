@@ -2,7 +2,6 @@
 
 #include <QDir>
 #include <QDebug>
-#include <QMessageBox>
 #include <QFile>
 #include <QProcess>
 
@@ -64,6 +63,7 @@ void Book::convert()
         //delete
         if(!temp->removeRecursively())
             qDebug()<<TEMPDIR<<" can't delete!";
+        qDebug()<<source->absolutePath();
     }
 
 }
