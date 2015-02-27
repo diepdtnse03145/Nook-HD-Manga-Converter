@@ -2,7 +2,6 @@
 #define BOOK_H
 #include <QObject>
 #include <QDir>
-#include <QImage>
 #include <QProcess>
 
 class Book : public QObject
@@ -15,22 +14,15 @@ public:
     Book(QObject *parent = 0);
     ~Book();
 
-signals:
-    void percentCompleted(int );
-
 private:
     QDir *source;
     QDir *temp;
     QFileInfo *convertedBook;
 
-    QFileInfoList chapterList;
-    QFileInfoList pageList;
-    quint64 pageNumber;
-    QImage *pngPage;
     QProcess *ext7zip;
     QStringList arguments;
 
-    void convertChapter(QFileInfo &xChapter);
+    void convertPage(const QString &pagePath, quint64 &pageNumber);
 
 };
 

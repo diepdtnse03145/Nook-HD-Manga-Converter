@@ -12,12 +12,16 @@ greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 TARGET = QConverter
 TEMPLATE = app
 
+CONFIG += c++11
 
 SOURCES += main.cpp\
         mainwindow.cpp \
-    book.cpp
+		book.cpp
 
 HEADERS  += mainwindow.h \
-    book.h
+		book.h
 
 FORMS    += mainwindow.ui
+
+
+#Nise 158
