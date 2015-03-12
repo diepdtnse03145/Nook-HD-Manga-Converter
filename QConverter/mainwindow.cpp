@@ -36,7 +36,7 @@ void MainWindow::addBook()
 {
     //Multiselection file dialog
     //http://www.qtcentre.org/threads/34226-QFileDialog-select-multiple-directories?p=220108#post220108
-    QFileDialog getBookListDialog(this,"Choose Book to Convert",OP_DIR);
+    QFileDialog getBookListDialog(this,"Choose Book to Convert",lastSelectDir);
     getBookListDialog.setFileMode(QFileDialog::DirectoryOnly);
     getBookListDialog.setOption(QFileDialog::DontUseNativeDialog,true);
 
@@ -57,6 +57,7 @@ void MainWindow::addBook()
     {
         ui->listWidget->addItems(getBookListDialog.selectedFiles());
     }
+    this->lastSelectDir = getBookListDialog.directory().absolutePath();
 }
 
 void MainWindow::convert()

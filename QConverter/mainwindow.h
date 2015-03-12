@@ -24,6 +24,7 @@ private slots:
 private:
     Ui::MainWindow *ui;
     Book *currentBook;
+    QString lastSelectDir;
 };
 
 #endif // MAINWINDOW_H

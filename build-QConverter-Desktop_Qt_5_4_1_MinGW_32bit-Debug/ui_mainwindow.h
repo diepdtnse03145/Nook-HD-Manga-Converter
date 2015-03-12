@@ -1,7 +1,7 @@
 /********************************************************************************
 ** Form generated from reading UI file 'mainwindow.ui'
 **
-** Created by: Qt User Interface Compiler version 5.3.1
+** Created by: Qt User Interface Compiler version 5.4.1
 **
 ** WARNING! All changes made in this file will be lost when recompiling UI file!
 ********************************************************************************/
@@ -17,7 +17,6 @@
 #include <QtWidgets/QHeaderView>
 #include <QtWidgets/QListWidget>
 #include <QtWidgets/QMainWindow>
-#include <QtWidgets/QProgressBar>
 #include <QtWidgets/QPushButton>
 #include <QtWidgets/QSpacerItem>
 #include <QtWidgets/QVBoxLayout>
@@ -29,7 +28,7 @@ class Ui_MainWindow
 {
 public:
     QWidget *centralWidget;
-    QWidget *widget;
+    QWidget *layoutWidget;
     QVBoxLayout *verticalLayout;
     QListWidget *listWidget;
     QHBoxLayout *horizontalLayout;
@@ -40,7 +39,6 @@ public:
     QPushButton *addButton;
     QSpacerItem *horizontalSpacer;
     QPushButton *convertButton;
-    QProgressBar *progressBar;
 
     void setupUi(QMainWindow *MainWindow)
     {
@@ -54,15 +52,15 @@ public:
         MainWindow->setSizePolicy(sizePolicy);
         centralWidget = new QWidget(MainWindow);
         centralWidget->setObjectName(QStringLiteral("centralWidget"));
-        widget = new QWidget(centralWidget);
-        widget->setObjectName(QStringLiteral("widget"));
-        widget->setGeometry(QRect(10, 11, 460, 252));
-        verticalLayout = new QVBoxLayout(widget);
+        layoutWidget = new QWidget(centralWidget);
+        layoutWidget->setObjectName(QStringLiteral("layoutWidget"));
+        layoutWidget->setGeometry(QRect(10, 11, 460, 252));
+        verticalLayout = new QVBoxLayout(layoutWidget);
         verticalLayout->setSpacing(6);
         verticalLayout->setContentsMargins(11, 11, 11, 11);
         verticalLayout->setObjectName(QStringLiteral("verticalLayout"));
         verticalLayout->setContentsMargins(0, 0, 0, 0);
-        listWidget = new QListWidget(widget);
+        listWidget = new QListWidget(layoutWidget);
         listWidget->setObjectName(QStringLiteral("listWidget"));
 
         verticalLayout->addWidget(listWidget);
@@ -70,7 +68,7 @@ public:
         horizontalLayout = new QHBoxLayout();
         horizontalLayout->setSpacing(6);
         horizontalLayout->setObjectName(QStringLiteral("horizontalLayout"));
-        clearAllButton = new QPushButton(widget);
+        clearAllButton = new QPushButton(layoutWidget);
         clearAllButton->setObjectName(QStringLiteral("clearAllButton"));
 
         horizontalLayout->addWidget(clearAllButton);
@@ -79,7 +77,7 @@ public:
 
         horizontalLayout->addItem(horizontalSpacer_2);
 
-        removeButton = new QPushButton(widget);
+        removeButton = new QPushButton(layoutWidget);
         removeButton->setObjectName(QStringLiteral("removeButton"));
 
         horizontalLayout->addWidget(removeButton);
@@ -88,7 +86,7 @@ public:
 
         horizontalLayout->addItem(horizontalSpacer_3);
 
-        addButton = new QPushButton(widget);
+        addButton = new QPushButton(layoutWidget);
         addButton->setObjectName(QStringLiteral("addButton"));
 
         horizontalLayout->addWidget(addButton);
@@ -97,21 +95,13 @@ public:
 
         horizontalLayout->addItem(horizontalSpacer);
 
-        convertButton = new QPushButton(widget);
+        convertButton = new QPushButton(layoutWidget);
         convertButton->setObjectName(QStringLiteral("convertButton"));
 
         horizontalLayout->addWidget(convertButton);
 
 
         verticalLayout->addLayout(horizontalLayout);
-
-        progressBar = new QProgressBar(widget);
-        progressBar->setObjectName(QStringLiteral("progressBar"));
-        progressBar->setEnabled(true);
-        progressBar->setValue(0);
-        progressBar->setTextVisible(false);
-
-        verticalLayout->addWidget(progressBar);
 
         MainWindow->setCentralWidget(centralWidget);
 
@@ -127,12 +117,6 @@ public:
         removeButton->setText(QApplication::translate("MainWindow", "Remove", 0));
         addButton->setText(QApplication::translate("MainWindow", "Add", 0));
         convertButton->setText(QApplication::translate("MainWindow", "Convert", 0));
-#ifndef QT_NO_TOOLTIP
-        progressBar->setToolTip(QString());
-#endif // QT_NO_TOOLTIP
-#ifndef QT_NO_STATUSTIP
-        progressBar->setStatusTip(QString());
-#endif // QT_NO_STATUSTIP
     } // retranslateUi
 
 };
