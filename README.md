@@ -1,5 +1,7 @@
 Nook-HD-Manga-Converter
 =======================
+Nook-HD-Manga-Converter is a program that create CBZ file for reading by Nook HD+ stock reader. This reader can't handle PNG image, so I create a tool for convert PNG image to JPG and put into a CBZ filẹ
+
 Build íntruction:
 -Get Qt from http://www.qt.io/download/
 -Install Qt
