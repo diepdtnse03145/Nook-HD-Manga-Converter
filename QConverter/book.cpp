@@ -52,8 +52,8 @@ void Book::convert()
 
 
     //Compressing...      
-     arguments << "a" << source->absolutePath().append(".zip") << temp->absolutePath().append("/*");
-    ext7zip->start("D:/7za", arguments);
+    arguments << "a" << source->absolutePath().append(".zip") << temp->absolutePath().append("/*");
+    ext7zip->start(QDir::currentPath() + QStringLiteral("/7za"), arguments);
 
     if(ext7zip->waitForFinished(-1))
     {

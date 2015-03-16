@@ -9,7 +9,7 @@
 #include <QMessageBox>
 #include <QTreeView>
 
-#define OP_DIR "D:/Documents/Manga"
+#define OP_DIR "E:/Documents/Manga"
 
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
