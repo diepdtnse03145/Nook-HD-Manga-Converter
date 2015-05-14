@@ -2,34 +2,47 @@
 #include "ui_mainwindow.h"
 #include "book.h"
 
-#include <QFileDialog>
-#include <QList>
-#include <QDebug>
-#include <QTime>
-#include <QMessageBox>
-#include <QTreeView>
+#include <QtCore>
+#include <QtWidgets>
+#include <QtGui>
+#include <QtConcurrent>
 
 #define OP_DIR "E:/Documents/Manga"
 
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
     ui(new Ui::MainWindow),
-    currentBook(new Book(this))
+    stateMachine(new QStateMachine(this))
 {
     ui->setupUi(this);
     ui->listWidget->setSelectionMode(QAbstractItemView::ExtendedSelection);
 
-    connect(ui->convertButton,SIGNAL(clicked()),this,SLOT(convert()));
+    QState *runningState = new QState();
+    QState *stopState = new QState();
+
+    stopState->addTransition(ui->convertButton,SIGNAL(clicked()),runningState);
+    runningState->addTransition(this,SIGNAL(finished()),stopState);
+
+    connect(stopState,&QState::entered,[&]{ui->statusBar->showMessage("Stop");});
+    connect(runningState,&QState::entered,[&]{ui->statusBar->showMessage("Running");});
+
+    connect(runningState,&QState::entered,this,&MainWindow::convert);
+
     connect(ui->addButton,SIGNAL(clicked()),this,SLOT(addBook()));
     connect(ui->clearAllButton,SIGNAL(clicked()),ui->listWidget,SLOT(clear()));
-    connect(ui->removeButton,SIGNAL(clicked()),this,SLOT(remove()));
+    connect(ui->removeButton,&QPushButton::clicked,[&]{qDeleteAll(ui->listWidget->selectedItems());});
 
+    stateMachine->addState(stopState);
+    stateMachine->addState(runningState);
+    stateMachine->setInitialState(stopState);
+
+    stateMachine->start();
 }
 
 MainWindow::~MainWindow()
 {
     delete ui;
-    delete currentBook;
+    delete stateMachine;
 }
 
 void MainWindow::addBook()
@@ -64,21 +77,23 @@ void MainWindow::convert()
 {
     qDebug()<<QTime::currentTime();
     //convert all book
+    QtConcurrent::run([&]{
+        for(int i = 0; i < ui->listWidget->count(); ++i)
+        {
+            Book currentBook;
+            currentBook.setSource(ui->listWidget->item(i)->text());
+            currentBook.convert();
+            qDebug()<<ui->listWidget->item(i)->text();
+        }
 
-    for(int i = 0; i < ui->listWidget->count(); ++i)
-    {
-        currentBook->setSource(ui->listWidget->item(i)->text());
-        currentBook->convert();
-    }  
+        emit this->finished();
+    });
+
     qDebug()<<QTime::currentTime();
-    QMessageBox::information(
-                this,
-                tr("Nook HD+ Manga Converter"),
-                tr("All job completed!") );
-}
+    //    QMessageBox::information(
+    //                this,
+    //                tr("Nook HD+ Manga Converter"),
+    //                tr("All job completed!") );
 
-void MainWindow::remove()
-{
-    qDeleteAll(ui->listWidget->selectedItems());
-}
 
+}

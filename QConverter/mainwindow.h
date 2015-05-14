@@ -8,6 +8,8 @@ namespace Ui {
 class MainWindow;
 }
 
+class QStateMachine;
+
 class MainWindow : public QMainWindow
 {
     Q_OBJECT
@@ -19,12 +21,14 @@ public:
 private slots:
     void addBook();
     void convert();
-    void remove();
+
+signals:
+    void finished();
 
 private:
     Ui::MainWindow *ui;
-    Book *currentBook;
     QString lastSelectDir;
+    QStateMachine *stateMachine;
 };
 
 #endif // MAINWINDOW_H

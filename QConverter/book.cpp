@@ -39,7 +39,7 @@ void Book::convert()
 
     //create temp folder
     if(!temp->removeRecursively())
-       qDebug()<<TEMPDIR<<" can't delete!";
+        qDebug()<<TEMPDIR<<" can't delete!";
     temp->mkpath(TEMPDIR);
 
     //Convert Book
@@ -51,10 +51,11 @@ void Book::convert()
     }
 
 
-    //Compressing...      
+    //Compressing...
     arguments << "a" << source->absolutePath().append(".zip") << temp->absolutePath().append("/*");
     ext7zip->start(QDir::currentPath() + QStringLiteral("/7za"), arguments);
-
+    qDebug()<<QDir::currentPath() + QStringLiteral("/7za");
+    qDebug()<<source->absolutePath().append(".cbz");
     if(ext7zip->waitForFinished(-1))
     {
         //Rename
@@ -74,8 +75,10 @@ void Book::convertPage(const QString& pagePath, quint64 &pageNumber)
     QString newName;
     QFileInfo page(pagePath);
 
+//    qDebug()<<pagePath;
     //Moving...
     newName = temp->absolutePath().append("/%1.jpg").arg(pageNumber,6,10,QLatin1Char('0'));
+    qDebug()<<newName;
     if (page.suffix().contains("jpg",Qt::CaseInsensitive))
     {
         if(!QFile::copy(page.absoluteFilePath(),newName))
@@ -88,10 +91,10 @@ void Book::convertPage(const QString& pagePath, quint64 &pageNumber)
             QImage *pngPage = new QImage();
 
             if(!pngPage->load(page.absoluteFilePath(),"png"))
-                 qDebug()<<"Load "<<page.absoluteFilePath()<<" to "<<newName<<" fail";
+                qDebug()<<"Load "<<page.absoluteFilePath()<<" to "<<newName<<" fail";
 
             if (!pngPage->save(newName,"jpg"))
-                 qDebug()<<"Save "<<page.absoluteFilePath()<<" to "<<newName<<" fail";
+                qDebug()<<"Save "<<page.absoluteFilePath()<<" to "<<newName<<" fail";
 
             delete pngPage;
 
