@@ -13,6 +13,8 @@ public:
     void setSource(QString xDir);
     Book(QObject *parent = 0);
     ~Book();
+signals:
+
 
 private:
     QDir *source;

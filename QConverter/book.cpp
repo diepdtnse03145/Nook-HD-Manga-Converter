@@ -32,7 +32,6 @@ void Book::convert()
 {
     //init chapter list
     quint64 pageNumber = 0;
-    //int i = 0;
 
     temp->setPath(TEMPDIR);
     arguments.clear();
@@ -43,18 +42,16 @@ void Book::convert()
     temp->mkpath(TEMPDIR);
 
     //Convert Book
-    QDirIterator chapterList(source->absolutePath(),QDir::Files,QDirIterator::Subdirectories);
-    while(chapterList.hasNext())
+    QDirIterator pageIte(source->absolutePath(),QDir::Files,QDirIterator::Subdirectories);
+    while(pageIte.hasNext())
     {
         //Convert page
-        this->convertPage(chapterList.next(),pageNumber);
+        this->convertPage(pageIte.next(),pageNumber);
     }
-
 
     //Compressing...
     arguments << "a" << source->absolutePath().append(".zip") << temp->absolutePath().append("/*");
     ext7zip->start(QDir::currentPath() + QStringLiteral("/7za"), arguments);
-    qDebug()<<QDir::currentPath() + QStringLiteral("/7za");
     qDebug()<<source->absolutePath().append(".cbz");
     if(ext7zip->waitForFinished(-1))
     {
@@ -64,7 +61,6 @@ void Book::convert()
         //delete
         if(!temp->removeRecursively())
             qDebug()<<TEMPDIR<<" can't delete!";
-        qDebug()<<source->absolutePath();
     }
 
 }
@@ -75,10 +71,8 @@ void Book::convertPage(const QString& pagePath, quint64 &pageNumber)
     QString newName;
     QFileInfo page(pagePath);
 
-//    qDebug()<<pagePath;
     //Moving...
     newName = temp->absolutePath().append("/%1.jpg").arg(pageNumber,6,10,QLatin1Char('0'));
-    qDebug()<<newName;
     if (page.suffix().contains("jpg",Qt::CaseInsensitive))
     {
         if(!QFile::copy(page.absoluteFilePath(),newName))

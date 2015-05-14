@@ -12,30 +12,50 @@
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
     ui(new Ui::MainWindow),
-    stateMachine(new QStateMachine(this))
+    stateMachine(new QStateMachine(this)),
+    lastSelectDir(OP_DIR)
 {
     ui->setupUi(this);
     ui->listWidget->setSelectionMode(QAbstractItemView::ExtendedSelection);
-
+    //Setting states
     QState *runningState = new QState();
     QState *stopState = new QState();
 
-    stopState->addTransition(ui->convertButton,SIGNAL(clicked()),runningState);
+    stopState->addTransition(this,SIGNAL(started()),runningState);
     runningState->addTransition(this,SIGNAL(finished()),stopState);
 
-    connect(stopState,&QState::entered,[&]{ui->statusBar->showMessage("Stop");});
-    connect(runningState,&QState::entered,[&]{ui->statusBar->showMessage("Running");});
+    runningState->assignProperty(ui->addButton,"enabled","false");
+    runningState->assignProperty(ui->clearAllButton,"enabled","false");
+    runningState->assignProperty(ui->removeButton,"enabled","false");
 
-    connect(runningState,&QState::entered,this,&MainWindow::convert);
 
-    connect(ui->addButton,SIGNAL(clicked()),this,SLOT(addBook()));
-    connect(ui->clearAllButton,SIGNAL(clicked()),ui->listWidget,SLOT(clear()));
-    connect(ui->removeButton,&QPushButton::clicked,[&]{qDeleteAll(ui->listWidget->selectedItems());});
+    stopState->assignProperty(ui->addButton,"enabled","true");
+    stopState->assignProperty(ui->clearAllButton,"enabled","true");
+    stopState->assignProperty(ui->removeButton,"enabled","true");
+
+    connect(runningState,&QState::entered,[&]{
+        qDebug()<<QTime::currentTime()<<"start convert";
+    });
+    connect(runningState,&QState::exited,[&]{
+        qDebug()<<QTime::currentTime()<<"stop convert";
+    });
+    connect(runningState,&QState::exited,[&]{
+        ui->progressBar->setValue(100);
+        QMessageBox::information(
+                    this,
+                    tr("Nook HD+ Manga Converter"),
+                    tr("All job completed!") );
+    });
 
     stateMachine->addState(stopState);
     stateMachine->addState(runningState);
     stateMachine->setInitialState(stopState);
 
+    connect(ui->convertButton,&QPushButton::clicked,this,&MainWindow::convert);
+    connect(ui->addButton,&QPushButton::clicked,this,&MainWindow::addBook);
+    connect(ui->clearAllButton,&QPushButton::clicked,ui->listWidget,&QListWidget::clear);
+    connect(ui->removeButton,&QPushButton::clicked,[&]{qDeleteAll(ui->listWidget->selectedItems());});
+    connect(this,&MainWindow::completed,ui->progressBar,&QProgressBar::setValue);
     stateMachine->start();
 }
 
@@ -75,25 +95,18 @@ void MainWindow::addBook()
 
 void MainWindow::convert()
 {
-    qDebug()<<QTime::currentTime();
-    //convert all book
+    emit this->started();
+
     QtConcurrent::run([&]{
+        Book currentBook;
         for(int i = 0; i < ui->listWidget->count(); ++i)
         {
-            Book currentBook;
             currentBook.setSource(ui->listWidget->item(i)->text());
             currentBook.convert();
-            qDebug()<<ui->listWidget->item(i)->text();
+            emit completed((i*100)/ui->listWidget->count());
         }
 
         emit this->finished();
     });
-
-    qDebug()<<QTime::currentTime();
-    //    QMessageBox::information(
-    //                this,
-    //                tr("Nook HD+ Manga Converter"),
-    //                tr("All job completed!") );
-
 
 }

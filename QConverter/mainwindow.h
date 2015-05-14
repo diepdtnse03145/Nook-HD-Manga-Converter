@@ -24,6 +24,8 @@ private slots:
 
 signals:
     void finished();
+    void started();
+    void completed(int percent);
 
 private:
     Ui::MainWindow *ui;
