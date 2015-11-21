@@ -3,76 +3,78 @@
 #include <QDir>
 #include <QDebug>
 #include <QFile>
-#include <QProcess>
 #include <QDirIterator>
 #include <QImage>
+#include <QApplication>
+#include <private/qzipwriter_p.h>
+#include <algorithm>
 
-#define TEMPDIR "/temp3373"
+#define TEMPDIR (qApp->applicationDirPath() + "/temp3373")
 
-Book::Book(QObject *parent):QObject(parent)
+Book::Book()
 {
-    source = new QDir();
-    temp = new QDir();
-    ext7zip = new QProcess(this);
+
 }
 
 Book::~Book()
 {
-    delete source;
-    delete temp;
-    delete ext7zip;
+
 }
 
 void Book::setSource(QString xDir)
 {
-    source->setPath(xDir);
+    source.setPath(xDir);
 }
 
 void Book::convert()
 {
-    //init chapter list
     quint64 pageNumber = 0;
-
-    temp->setPath(TEMPDIR);
-    arguments.clear();
+    temp.setPath(TEMPDIR);
 
     //create temp folder
-    if(!temp->removeRecursively())
+    if(!temp.removeRecursively())
         qDebug()<<TEMPDIR<<" can't delete!";
-    temp->mkpath(TEMPDIR);
+    temp.mkpath(TEMPDIR);
 
-    //Convert Book
-    QDirIterator pageIte(source->absolutePath(),QDir::Files,QDirIterator::Subdirectories);
+    //rename and convert image to JPG
+    QStringList pageList;
+    QDirIterator pageIte(source.absolutePath(),QDir::Files,QDirIterator::Subdirectories);
+
     while(pageIte.hasNext())
     {
-        //Convert page
-        this->convertPage(pageIte.next(),pageNumber);
+        pageList.append(pageIte.next());
+    }
+    std::sort(pageList.begin(),pageList.end());
+
+    for(const auto& p: pageList){
+        this->convertPage(p,pageNumber);
     }
 
     //Compressing...
-    arguments << "a" << source->absolutePath().append(".zip") << temp->absolutePath().append("/*");
-    ext7zip->start(QDir::currentPath() + QStringLiteral("/7za"), arguments);
-    qDebug()<<source->absolutePath().append(".cbz");
-    if(ext7zip->waitForFinished(-1))
-    {
-        //Rename
-        QFile::rename(source->absolutePath().append(".zip"), source->absolutePath().append(".cbz"));
-
-        //delete
-        if(!temp->removeRecursively())
-            qDebug()<<TEMPDIR<<" can't delete!";
+    QZipWriter cbzOutput{source.absolutePath().append(".cbz")};
+    QDirIterator ite{TEMPDIR};
+    while(ite.hasNext()){
+        if(ite.fileInfo().isFile()){
+            QFile f(ite.filePath());
+            f.open(QIODevice::ReadOnly);
+            auto data = f.readAll();
+            cbzOutput.addFile(ite.fileName(),data);
+        }
+        ite.next();
     }
 
+    //Remove temp folder
+    if(!temp.removeRecursively())
+        qDebug()<<TEMPDIR<<" can't delete!";
 }
 
 void Book::convertPage(const QString& pagePath, quint64 &pageNumber)
 {
-    //init page list
     QString newName;
     QFileInfo page(pagePath);
 
     //Moving...
-    newName = temp->absolutePath().append("/%1.jpg").arg(pageNumber,6,10,QLatin1Char('0'));
+    newName = temp.absolutePath().append("/%1.jpg").arg(pageNumber,6,10,QLatin1Char('0'));
     if (page.suffix().contains("jpg",Qt::CaseInsensitive))
     {
         if(!QFile::copy(page.absoluteFilePath(),newName))
@@ -91,7 +93,6 @@ void Book::convertPage(const QString& pagePath, quint64 &pageNumber)
                 qDebug()<<"Save "<<page.absoluteFilePath()<<" to "<<newName<<" fail";
 
             delete pngPage;
-
         }
         else qDebug()<<page.absoluteFilePath();
     }
