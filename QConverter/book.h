@@ -3,6 +3,8 @@
 
 #include <QDir>
 
+class QZipWriter;
+
 class Book
 {
 public:
@@ -13,10 +15,7 @@ public:
 
 private:
     QDir source;
-    QDir temp;
-
-    void convertPage(const QString &pagePath, quint64 &pageNumber);
-
+    void convertPage(const QString &pagePath, quint64 &pageNumber, QZipWriter* output);
 };
 
 #endif // BOOK_H

@@ -98,6 +98,8 @@ void MainWindow::convert()
     emit this->started();
 
     QtConcurrent::run([&]{
+        QElapsedTimer t;
+        t.start();
         Book currentBook;
         for(int i = 0; i < ui->listWidget->count(); ++i)
         {
@@ -105,7 +107,7 @@ void MainWindow::convert()
             currentBook.convert();
             emit completed((i*100)/ui->listWidget->count());
         }
-
+        qDebug()<<t.nsecsElapsed();
         emit this->finished();
     });
 

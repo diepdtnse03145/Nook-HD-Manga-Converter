@@ -8,8 +8,8 @@
 #include <QApplication>
 #include <private/qzipwriter_p.h>
 #include <algorithm>
+#include <QBuffer>
 
-#define TEMPDIR (qApp->applicationDirPath() + "/temp3373")
 
 Book::Book()
 {
@@ -29,12 +29,6 @@ void Book::setSource(QString xDir)
 void Book::convert()
 {
     quint64 pageNumber = 0;
-    temp.setPath(TEMPDIR);
-
-    //create temp folder
-    if(!temp.removeRecursively())
-        qDebug()<<TEMPDIR<<" can't delete!";
-    temp.mkpath(TEMPDIR);
 
     //rename and convert image to JPG
     QStringList pageList;
@@ -46,56 +40,30 @@ void Book::convert()
     }
     std::sort(pageList.begin(),pageList.end());
 
-    for(const auto& p: pageList){
-        this->convertPage(p,pageNumber);
-    }
-
-    //Compressing...
     QZipWriter cbzOutput{source.absolutePath().append(".cbz")};
-    QDirIterator ite{TEMPDIR};
-    while(ite.hasNext()){
-        if(ite.fileInfo().isFile()){
-            QFile f(ite.filePath());
-            f.open(QIODevice::ReadOnly);
-            auto data = f.readAll();
-            cbzOutput.addFile(ite.fileName(),data);
-        }
-        ite.next();
-    }
 
-    //Remove temp folder
-    if(!temp.removeRecursively())
-        qDebug()<<TEMPDIR<<" can't delete!";
+    for(const auto& p: pageList) {
+        this->convertPage(p,pageNumber,&cbzOutput);
+    }
 }
 
-void Book::convertPage(const QString& pagePath, quint64 &pageNumber)
+void Book::convertPage(const QString &pagePath, quint64 &pageNumber, QZipWriter* output)
 {
-    QString newName;
-    QFileInfo page(pagePath);
+    QImage page;
+    QString newName = QStringLiteral("%1.jpg").arg(pageNumber,6,10,QLatin1Char('0'));
 
-    //Moving...
-    newName = temp.absolutePath().append("/%1.jpg").arg(pageNumber,6,10,QLatin1Char('0'));
-    if (page.suffix().contains("jpg",Qt::CaseInsensitive))
-    {
-        if(!QFile::copy(page.absoluteFilePath(),newName))
-            qDebug()<<"Move "<<page.absoluteFilePath()<<" to "<<newName<<" fail";
+    if(!page.load(pagePath)) {
+        qDebug()<<"Can't load"<<pagePath<<"into QImage";
     }
-    else
-    {
-        if (page.suffix().contains("png",Qt::CaseInsensitive))
-        {
-            QImage *pngPage = new QImage();
 
-            if(!pngPage->load(page.absoluteFilePath(),"png"))
-                qDebug()<<"Load "<<page.absoluteFilePath()<<" to "<<newName<<" fail";
-
-            if (!pngPage->save(newName,"jpg"))
-                qDebug()<<"Save "<<page.absoluteFilePath()<<" to "<<newName<<" fail";
-
-            delete pngPage;
-        }
-        else qDebug()<<page.absoluteFilePath();
+    QByteArray ba;
+    QBuffer buffer(&ba);
+    buffer.open(QIODevice::WriteOnly);
+    if(!page.save(&buffer,"jpg")) {
+        qDebug()<<"Can't save"<<pagePath<<"into QBuffer";
     }
+
+    output->addFile(newName,ba);
     ++pageNumber;
 }
 
