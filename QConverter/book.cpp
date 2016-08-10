@@ -9,7 +9,7 @@
 #include <private/qzipwriter_p.h>
 #include <algorithm>
 #include <QBuffer>
-
+#include <QCollator>
 
 Book::Book()
 {
@@ -38,7 +38,12 @@ void Book::convert()
     {
         pageList.append(pageIte.next());
     }
-    std::sort(pageList.begin(),pageList.end());
+
+    QCollator collator;
+    collator.setNumericMode(true);
+    std::sort(pageList.begin(),pageList.end(), [&collator](const QString& s1, const QString& s2)->bool{
+        return collator.compare(s1, s2) < 0;
+    });
 
     QZipWriter cbzOutput{source.absolutePath().append(".cbz")};
 
